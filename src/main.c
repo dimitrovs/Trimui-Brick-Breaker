@@ -6,8 +6,8 @@
 
 #include "../include/main.h"
 
-#define S_WIDTH 590
-#define S_HEIGHT 960
+#define S_WIDTH 1280
+#define S_HEIGHT 720
 #define L_WIDTH 0
 #define L_HEIGHT 0
 
@@ -39,10 +39,16 @@ app_t app;
 // necessary to run a window.
 int main(int argc, char *argv[])
 {
+  printf("DEBUG: Starting Brick Breaker game\n");
   init_game("Brick Breaker in C", S_WIDTH, S_HEIGHT, L_WIDTH, L_HEIGHT);
+  printf("DEBUG: Game initialized\n");
   init_app_structures();
+  printf("DEBUG: App structures initialized\n");
   init_scene();
+  printf("DEBUG: Scene initialized\n");
   init_menu();
+  printf("DEBUG: Menu initialized\n");
+  printf("DEBUG: Entering game loop\n");
   loop();
 
   atexit(cleanup_stage);
@@ -293,6 +299,17 @@ check_paused(void)
     play_sound(SND_PAUSE, CH_ANY);
     app.game_state = app.game_state == PAUSED ? RUNNING : PAUSED;
     app.keyboard[SDL_SCANCODE_P] = 0;
+  }
+
+  // Return to menu with Escape key
+  if (app.keyboard[SDL_SCANCODE_ESCAPE] && stage.state == GAME)
+  {
+    printf("DEBUG: Returning to menu\n");
+    stage.state = MENU;
+    app.game_state = PREGAME;
+    app.keyboard[SDL_SCANCODE_ESCAPE] = 0;
+    load_music("res/sfx/music/titlesong.ogg");
+    play_music(true);
   }
 
   if (app.game_state == PAUSED)

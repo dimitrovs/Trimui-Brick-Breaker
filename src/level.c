@@ -63,9 +63,12 @@ add_level( uint16_t level_id ) {
 
   uint8_t brick_data = 1;
 
+  // Center the brick field horizontally
+  int start_x = (app.SCREEN_WIDTH - (BRICK_COL_COUNT * BRICK_WIDTH)) / 2;
+  
   for ( int y = 120; y < 120 + ( BRICK_HEIGHT * BRICK_ROW_COUNT ); y += 32 ) {
     fgets( buffer, MAXC, fptr );
-    for ( int x = 20, bi = 0; x <= app.SCREEN_WIDTH - 80; x += 92, bi++ ) {
+    for ( int x = start_x, bi = 0; bi < BRICK_COL_COUNT; x += BRICK_WIDTH, bi++ ) {
       entity_t *b;
       int       c = ( buffer[bi] - '\0' ) - CHAR_OFFSET;
 

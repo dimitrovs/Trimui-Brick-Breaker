@@ -61,11 +61,11 @@ key_input_update( void ) {
     paddle->dx *= DECELERATION;
     paddle->dy *= DECELERATION;
 
-    if ( app.keyboard[SDL_SCANCODE_A] ) {
+    if ( app.keyboard[SDL_SCANCODE_A] || app.keyboard[SDL_SCANCODE_LEFT] ) {
       paddle->dx = -H_VELOCITY;
     }
 
-    if ( app.keyboard[SDL_SCANCODE_D] ) {
+    if ( app.keyboard[SDL_SCANCODE_D] || app.keyboard[SDL_SCANCODE_RIGHT] ) {
       paddle->dx = H_VELOCITY;
     }
   }

@@ -112,23 +112,34 @@ init_SDL( const char *window_name, uint32_t window_width, uint32_t window_height
   app.LEVEL_WIDTH   = level_width;
   app.LEVEL_HEIGHT  = level_height;
 
+  // Configure video driver before SDL init (required for Trimui devices)
+  printf("DEBUG: Setting SDL video driver hint\n");
+  SDL_SetHint( SDL_HINT_VIDEODRIVER, "mali" );
+
   // Initialize SDL and exit if we fail.
-  if ( SDL_Init( SDL_INIT_EVERYTHING ) < 0 ) {
+  // Don't use SDL_INIT_EVERYTHING as the device doesn't support sensors
+  printf("DEBUG: Initializing SDL...\n");
+  if ( SDL_Init( SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_EVENTS | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER ) < 0 ) {
+    printf("ERROR: Could not initialize SDL: %s.\n", SDL_GetError());
     SDL_LogInfo( SDL_LOG_CATEGORY_APPLICATION, "Could not initialize SDL: %s.\n", SDL_GetError() );
     exit( EXIT_ERROR );
   }
+  printf("DEBUG: SDL initialized successfully\n");
 
   if ( debug_mode ) {
     SDL_LogInfo( SDL_LOG_CATEGORY_APPLICATION, "Initializing window." );
   }
 
   // Initialize the SDL window.
+  printf("DEBUG: Creating window %dx%d\n", window_width, window_height);
   app.window = SDL_CreateWindow( window_name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                  window_width, window_height, window_flags );
   if ( !app.window ) {
+    printf("ERROR: Could not open window. %s.\n", SDL_GetError());
     SDL_LogInfo( SDL_LOG_CATEGORY_APPLICATION, "Could not open window. %s.\n", SDL_GetError() );
     exit( EXIT_ERROR );
   }
+  printf("DEBUG: Window created successfully\n");
 
   SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "nearest" );
 
@@ -137,12 +148,15 @@ init_SDL( const char *window_name, uint32_t window_width, uint32_t window_height
   }
 
   // Create renderer with the default graphics context.
+  printf("DEBUG: Creating renderer\n");
   app.renderer = SDL_CreateRenderer( app.window, -1, renderer_flags );
   if ( !app.renderer ) {
+    printf("ERROR: Failed to initialize renderer: %s.\n", SDL_GetError());
     SDL_LogInfo( SDL_LOG_CATEGORY_APPLICATION, "Failed to initialize renderer: %s.\n",
                  SDL_GetError() );
     exit( EXIT_ERROR );
   }
+  printf("DEBUG: Renderer created successfully\n");
 
   if ( debug_mode ) {
     SDL_LogInfo( SDL_LOG_CATEGORY_APPLICATION, "Initialization Completed." );

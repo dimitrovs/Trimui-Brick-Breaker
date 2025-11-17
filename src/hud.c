@@ -1,4 +1,5 @@
 #include "../include/hud.h"
+#include "../lib/stds/include/input.h"
 
 static SDL_Texture *heartTexture;
 static fade_color_t fadeColor;
@@ -11,6 +12,8 @@ static char *       sfx_by       = "Sound and Music by Break It! Java Game";
 static button_t *play_button;
 static button_t *help_button;
 static button_t *exit_button;
+
+static bool prev_action_state = false;  // Track button state to detect press
 
 static void draw_lives( SDL_Color * );
 static void draw_title( SDL_Color * );
@@ -82,40 +85,44 @@ update_HUD( void ) {
     menu_update();
     update_buttons();
   } else {
-    spawn_star_particles( random_float( 400.0f, 2000.0f ), random_float( 900.0f, 1100.0f ), 20,
+    spawn_star_particles( random_float( 0.0f, app.SCREEN_WIDTH ), random_float( app.SCREEN_HEIGHT - 200.0f, app.SCREEN_HEIGHT + 200.0f ), 20,
                           ID_P_STAR_MASK );
   }
 }
 
 void
 menu_update( void ) {
-  if ( is_mouse_over_button( play_button ) ) {
-    play_button->texture_id = 1;
-  } else {
-    play_button->texture_id = 0;
+  int selected = get_selected_button_index();
+  bool action_pressed = is_action_button_pressed();
+  
+  printf("DEBUG: menu_update - selected=%d, action=%d\n", selected, action_pressed);
+  
+  // Update button highlights based on selection
+  play_button->texture_id = (selected == 0) ? 1 : 0;
+  help_button->texture_id = (selected == 1) ? 1 : 0;
+  exit_button->texture_id = (selected == 2) ? 1 : 0;
+  
+  // Check for action button press (detect rising edge)
+  if (action_pressed && !prev_action_state) {
+    printf("DEBUG: Action button activated on menu item %d\n", selected);
+    
+    if (selected == 0) {
+      // Play button
+      printf("DEBUG: Starting game\n");
+      stage.state = GAME;
+      play_music( false );
+      load_level_music( stage.level_id );
+    } else if (selected == 1) {
+      // Help button
+      print( "HELP!" );
+    } else if (selected == 2) {
+      // Exit button
+      printf("DEBUG: Exiting game\n");
+      exit( EXIT_SUCCESS );
+    }
   }
-
-  if ( is_mouse_over_button( help_button ) ) {
-    help_button->texture_id = 1;
-  } else {
-    help_button->texture_id = 0;
-  }
-
-  if ( is_mouse_over_button( exit_button ) ) {
-    exit_button->texture_id = 1;
-  } else {
-    exit_button->texture_id = 0;
-  }
-
-  if ( is_button_clicked( play_button, SDL_BUTTON_LEFT ) ) {
-    stage.state = GAME;
-    play_music( false );
-    load_level_music( stage.level_id );
-  } else if ( is_button_clicked( help_button, SDL_BUTTON_LEFT ) ) {
-    print( "HELP!" );
-  } else if ( is_button_clicked( exit_button, SDL_BUTTON_LEFT ) ) {
-    exit( EXIT_SUCCESS );
-  }
+  
+  prev_action_state = action_pressed;
 }
 
 void
